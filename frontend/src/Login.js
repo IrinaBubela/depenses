@@ -31,8 +31,9 @@ class Login extends React.Component {
                 "username": this.state.inputEmail,
                 "password": this.state.inputPassword
             }
-        ).then(data => {
-            if (data.status == 200) {
+        ).then(response => {
+            if (response.status == 200) {
+                window.localStorage.setItem('x-auth-token', response.data.auth_token);
                 this.setState({ redirect: '/' })
             }
         }
