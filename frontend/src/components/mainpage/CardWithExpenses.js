@@ -5,7 +5,6 @@ import DebtsDataOnCard from './DebtsDataOnCard'
 class CardWithExpenses extends React.Component {
 
     render() {
-        console.log(this.props);
         return (
             <Card className="card-item">
                 <Card.Body>
@@ -15,12 +14,6 @@ class CardWithExpenses extends React.Component {
                             < DebtsDataOnCard name={memberName} amount={this.props.debt[memberName]} key={i} />
                         )
                     })}
-                    < Form action="#!" onSubmit={this.props.onMakeDebt} id="borrow" >
-                        <Form.Group>
-                            <Form.Control placeholder="Enter amount of owed money" onChange={this.props.onInputDebtChange} />
-                            <Button variant="primary" type="submit">Add a debt</Button>
-                        </Form.Group>
-                    </ Form>
                 </Card.Body>
             </Card >
         )

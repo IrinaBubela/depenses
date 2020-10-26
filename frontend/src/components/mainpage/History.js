@@ -12,7 +12,7 @@ class History extends React.Component {
                 {this.props.expenseData.map((el, i) => {
 
                     return (
-                        <div key={i}>
+                        <div className="history-container-item" key={i}>
                             {(() => {
                                 switch (el.type) {
                                     case 'settlement':

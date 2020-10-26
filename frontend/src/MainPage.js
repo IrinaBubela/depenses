@@ -3,7 +3,7 @@ import CardWithExpenses from './components/mainpage/CardWithExpenses';
 import axios from 'axios';
 import History from './components/mainpage/History';
 import NavBarComponent from './components/mainpage/NavBarComponent';
-import AddNewExpanse from './components/mainpage/AddNewExpanse';
+import AddNewExpanseOrDebt from './components/mainpage/AddNewExpanseOrDebt';
 import Error from './Error';
 
 import DepensesApi from './api';
@@ -16,18 +16,18 @@ class MainPage extends React.Component {
             expenseData: [],
             inputExpanse: '',
             settlement: false,
-            debt: 0,
+            selectValue: 'expanses',
             error: false,
             roomMembers: [],
             roomState: {}
         }
         this.onInputExpanseChange = this.onInputExpanseChange.bind(this);
-        this.onInputDebtChange = this.onInputDebtChange.bind(this);
+        this.onSelectChange = this.onSelectChange.bind(this);
         this.getDate = this.getDate.bind(this);
-        this.onMakeExpense = this.onMakeExpense.bind(this);
-        this.onMakeSettlement = this.onMakeSettlement.bind(this);
         this.getToken = this.getToken.bind(this);
+        this.onMakeExpense = this.onMakeExpense.bind(this);
         this.onMakeDebt = this.onMakeDebt.bind(this);
+        this.onMakeExpense = this.onMakeExpense.bind(this);
         this.api = new DepensesApi();
     }
 
@@ -35,9 +35,12 @@ class MainPage extends React.Component {
         let newExpansesEl = parseInt(e.target.value);
         this.setState({ inputExpanse: newExpansesEl });
     }
-    onInputDebtChange(e) {
-        let newDebtEl = parseInt(e.target.value);
-        this.setState({ debt: newDebtEl });
+
+    onSelectChange(e) {
+        let newSelectValue = e.target.value;
+        if (newSelectValue === 'debt') {
+            this.setState({ selectValue: newSelectValue });
+        };
     }
 
     getToken() {
@@ -58,9 +61,23 @@ class MainPage extends React.Component {
         })
     }
 
-    async onMakeExpense(e) {
+    async onMakeDebt(e) {
         e.preventDefault();
+        const response = await this.api.makeApiPostRequest("depts", {
+            title: 'test-title',
+            amount: this.state.inputExpanse,
+            room: 1,
+            from_member: 1,
+            to_member: 2
+        })
 
+        this.setState({
+            expenseData: [{ member: 'Ala', amount: this.state.inputExpanse, date: new Date, type: 'dept', from_member_name: 1, to_member_name: 2 }, ...this.state.expenseData
+            ]
+        })
+    }
+
+    async onMakeExpense(e) {
         const response = await this.api.makeApiPostRequest("spendings", {
             amount: this.state.inputExpanse,
             title: 'test-title',
@@ -70,23 +87,6 @@ class MainPage extends React.Component {
 
         this.setState({
             expenseData: [{ member: 'Ala', amount: this.state.inputExpanse, date: new Date, type: 'spending' }, ...this.state.expenseData]
-        })
-    }
-
-    async onMakeDebt(e) {
-        e.preventDefault();
-
-        const response = await this.api.makeApiPostRequest("depts", {
-            title: 'test-title',
-            amount: this.state.debt,
-            room: 1,
-            from_member: 1,
-            to_member: 2
-        })
-
-        this.setState({
-            expenseData: [{ member: 'Ala', amount: this.state.debt, date: new Date, type: 'dept', from_member_name: 1, to_member_name: 2 }, ...this.state.expenseData,
-            ]
         })
     }
 
@@ -148,18 +148,15 @@ class MainPage extends React.Component {
             <div>
                 <NavBarComponent />
                 <div className="container-fluid mainpage" >
-                    <div className="container" >
-                        <div className="row">
-                            <div className="col-12 content-row">
-                                <h1>Budget in October 2020</h1>
-                                <p>Room CZEBOTODREL</p>
+                    <div className="row-mainpage">
+                        <div className="content-row container">
+                            <div className="row">
+                                <h1 className="text-center">Budget in October 2020</h1>
                                 <div className="card-expenses">
                                     {
                                         this.state.roomMembers.map((member, i) => {
                                             return <CardWithExpenses
                                                 key={i}
-                                                onMakeDebt={this.onMakeDebt}
-                                                onInputDebtChange={this.onInputDebtChange}
                                                 member={member}
                                                 debt={this.state.roomState[member.name]}
                                             />
@@ -171,21 +168,27 @@ class MainPage extends React.Component {
                                 </div>
                             </div>
                         </div>
-                        <div className="container" >
-                            <div className="row">
-                                <div className="col-12 content-row">
-                                    <h1>Your History Expanses</h1>
-                                    <AddNewExpanse onMakeExpense={this.onMakeExpense} onInputExpanseChange={this.onInputExpanseChange} />
-                                    {this.state.error ?
-                                        <Error message={this.state.error} /> : null
-                                    }
-                                    <History expenseData={this.state.expenseData} getDate={this.getDate} />
-                                </div>
-                            </div>
+                    </div>
+                    <div className="row-mainpage">
+                        <div className="content-row container">
+                            <AddNewExpanseOrDebt value={this.state.selectValue}
+                                onSelectChange={this.onSelectChange}
+                                onMakeExpense={this.onMakeExpense}
+                                onMakeDebt={this.onMakeDebt}
+                                onInputExpanseChange={this.onInputExpanseChange} />
+                            {this.state.error ?
+                                <Error message={this.state.error} /> : null
+                            }
                         </div>
-                    </div >
+                    </div>
+                    <div className="row-mainpage">
+                        <div className="content-row container">
+                            <h1 className="text-center">Your History Expanses</h1>
+                            <History className="text-center" expenseData={this.state.expenseData} getDate={this.getDate} />
+                        </div>
+                    </div>
                 </div >
-            </div>
+            </div >
 
         );
     }
