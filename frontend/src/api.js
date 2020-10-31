@@ -33,6 +33,16 @@ class DepensesApi {
         return response;
     }
 
+    async getActualUserName(roomId) {
+        const response = await axios.get(`http://localhost:8000/api/v1/room/1/me/`,
+            {
+                headers: {
+                    Authorization: `Token ${this.getToken()}`
+                }
+            });
+        return response;
+    }
+
     async makeApiPostRequest(endpoint, data) {
         const response = axios.post(this.makeEndpointUrl(endpoint), data,
             {

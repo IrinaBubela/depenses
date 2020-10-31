@@ -18,8 +18,14 @@ class MainPage extends React.Component {
             settlement: false,
             selectValue: 'expanses',
             error: false,
+            actualUser: '',
             roomMembers: [],
-            roomState: {}
+            roomMembersWithoutMe: [],
+            roomState: {},
+            selectedDebtMemberId: {},
+            selectedDebtMemberName: {},
+            selectedSettlementMember: {}
+
         }
         this.onInputExpanseChange = this.onInputExpanseChange.bind(this);
         this.onSelectChange = this.onSelectChange.bind(this);
@@ -27,7 +33,11 @@ class MainPage extends React.Component {
         this.getToken = this.getToken.bind(this);
         this.onMakeExpense = this.onMakeExpense.bind(this);
         this.onMakeDebt = this.onMakeDebt.bind(this);
-        this.onMakeExpense = this.onMakeExpense.bind(this);
+        this.onMakeSettlement = this.onMakeSettlement.bind(this);
+        this.updateResponseState = this.updateResponseState.bind(this);
+        this.onSelectDebtUserChange = this.onSelectDebtUserChange.bind(this);
+        this.onSelectSettlementUserChange = this.onSelectSettlementUserChange.bind(this);
+        this.getMemberNameById = this.getMemberNameById.bind(this);
         this.api = new DepensesApi();
     }
 
@@ -38,9 +48,33 @@ class MainPage extends React.Component {
 
     onSelectChange(e) {
         let newSelectValue = e.target.value;
-        if (newSelectValue === 'debt') {
-            this.setState({ selectValue: newSelectValue });
-        };
+        console.log(newSelectValue);
+        this.setState({ selectValue: newSelectValue });
+    }
+
+    onSelectDebtUserChange(e) {
+        let newSelectValue = e.target.value;
+        console.log(e.target.value);
+        this.setState({
+            selectedDebtMemberId: newSelectValue.id,
+            selectedDebtMemberName: newSelectValue.name
+        });
+    }
+
+    getMemberNameById(memberId) {
+        return this.state.roomMembers.filter(member => member.id === memberId)[0];
+    }
+
+    onSelectSettlementUserChange(e) {
+        const selectedMemberId = parseInt(e.target.value);
+        console.log(selectedMemberId);
+        console.log(this.state.roomMembers);
+        const selectedMember = this.getMemberNameById(selectedMemberId);
+        console.log(selectedMember);
+
+        this.setState({
+            selectedSettlementMember: selectedMember,
+        });
     }
 
     getToken() {
@@ -50,15 +84,19 @@ class MainPage extends React.Component {
     async onMakeSettlement(e) {
         e.preventDefault();
 
+        console.log(this.state.selectedSettlementMember);
+
         const response = await this.api.makeApiPostRequest("settlements", {
-            member: 1,
-            settlement_with_member: 1,
+            member: this.state.actualUser.id,
+            settlement_with_member: this.state.selectedSettlementMember.id,
             room: 1
         }).then(data => console.log(data));
 
         this.setState({
-            expenseData: [{ member: 'Ala', settlement: true, date: new Date, type: 'settlement' }, ...this.state.expenseData]
+            expenseData: [{ member: this.state.actualUser.name, settlement_with_member: this.state.selectedSettlementMember.name, settlement: true, date: new Date, type: 'settlement' }, ...this.state.expenseData]
         })
+
+        this.updateResponseState()
     }
 
     async onMakeDebt(e) {
@@ -67,14 +105,19 @@ class MainPage extends React.Component {
             title: 'test-title',
             amount: this.state.inputExpanse,
             room: 1,
-            from_member: 1,
-            to_member: 2
+            from_member: parseInt(this.state.actualUser.id),
+            to_member: this.state.selectedDebtMember.id
         })
 
         this.setState({
-            expenseData: [{ member: 'Ala', amount: this.state.inputExpanse, date: new Date, type: 'dept', from_member_name: 1, to_member_name: 2 }, ...this.state.expenseData
+            expenseData: [{
+                member: this.state.actualUser.name, amount: this.state.inputExpanse, date: new Date, type: 'dept',
+                from_member_name: this.state.actualUser.name, to_member_name: this.state.selectedDebtMember.name
+            },
+            ...this.state.expenseData
             ]
         })
+        this.updateResponseState()
     }
 
     async onMakeExpense(e) {
@@ -82,19 +125,25 @@ class MainPage extends React.Component {
             amount: this.state.inputExpanse,
             title: 'test-title',
             room: 1,
-            member: 1
+            member: this.state.actualUser.id
         }).then(data => console.log(data));
 
         this.setState({
-            expenseData: [{ member: 'Ala', amount: this.state.inputExpanse, date: new Date, type: 'spending' }, ...this.state.expenseData]
+            expenseData: [{ member: this.state.actualUser.name, amount: this.state.inputExpanse, date: new Date, type: 'spending' }, ...this.state.expenseData]
         })
+        this.updateResponseState()
     }
 
     async componentDidMount() {
+        this.updateResponseState();
         try {
-            const getData = await this.api.getDataHistory(1);
+            const getDataHistoryResponse = await this.api.getDataHistory(1);
             this.setState({
-                expenseData: [...this.state.expenseData, ...getData.data]
+                expenseData: [...this.state.expenseData, ...getDataHistoryResponse.data]
+            })
+            const getActualUserNameResponse = await this.api.getActualUserName(1);
+            this.setState({
+                actualUser: getActualUserNameResponse.data
             })
         }
         catch (err) {
@@ -110,6 +159,19 @@ class MainPage extends React.Component {
             }
         }
 
+        const roomMembersWithoutMe = this.state.roomMembers.filter((member) => {
+            return member.name !== this.state.actualUser.name;
+        })
+
+
+
+        this.setState({
+            roomMembersWithoutMe: roomMembersWithoutMe,
+            selectedDebtMember: roomMembersWithoutMe[0]
+        })
+    }
+
+    async updateResponseState() {
         const responseMembers = await axios.get('http://127.0.0.1:8000/api/v1/room/1/members/',
             {
                 headers: {
@@ -126,22 +188,17 @@ class MainPage extends React.Component {
             }
         )
         this.setState({ roomMembers: responseMembers.data, roomState: responseState.data });
-
     }
 
 
     getDate(date) {
         var newDate = new Date(date);
-
         var day = newDate.getDate().toString();
         var month = newDate.getMonth().toString();
         var year = newDate.getFullYear().toString();
 
         return `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year.padStart(2, '0')}`;
     }
-
-
-
 
     render() {
         return (
@@ -163,9 +220,6 @@ class MainPage extends React.Component {
                                         })
                                     }
                                 </div>
-                                <div className="settlements">
-                                    <button className="btn btn-outline-dark" id="settlement" onClick={this.onMakeSettlement}>Pay off</button>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -175,7 +229,12 @@ class MainPage extends React.Component {
                                 onSelectChange={this.onSelectChange}
                                 onMakeExpense={this.onMakeExpense}
                                 onMakeDebt={this.onMakeDebt}
-                                onInputExpanseChange={this.onInputExpanseChange} />
+                                onMakeSettlement={this.onMakeSettlement}
+                                onInputExpanseChange={this.onInputExpanseChange}
+                                roomMembersWithoutMe={this.state.roomMembersWithoutMe}
+                                actualUserName={this.state.actualUser.name}
+                                onSelectDebtUserChange={this.onSelectDebtUserChange}
+                                onSelectSettlementUserChange={this.onSelectSettlementUserChange} />
                             {this.state.error ?
                                 <Error message={this.state.error} /> : null
                             }

@@ -7,16 +7,16 @@ import HistoryItemDebt from './HistoryItemDebt';
 
 class History extends React.Component {
     render() {
+        console.log(this.props.expenseData);
         return (
             <div className="history">
                 {this.props.expenseData.map((el, i) => {
-
                     return (
                         <div className="history-container-item" key={i}>
                             {(() => {
                                 switch (el.type) {
                                     case 'settlement':
-                                        return (<HistoryItemSettlement name={el.member}
+                                        return (<HistoryItemSettlement name={el.member_name}
                                             settlement={el.settlement_with_member}
                                             dateDetails={this.props.getDate(el.date)}
                                         />)
@@ -37,7 +37,7 @@ class History extends React.Component {
                                     case 'spending':
 
                                         return (
-                                            <HistoryItemExpense name={el.member}
+                                            <HistoryItemExpense name={el.member_name}
                                                 price={el.amount}
                                                 dateDetails={this.props.getDate(el.date)}
                                             />
