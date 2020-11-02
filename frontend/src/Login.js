@@ -32,7 +32,7 @@ class Login extends React.Component {
                 "password": this.state.inputPassword
             }
         ).then(response => {
-            if (response.status == 200) {
+            if (response.status === 200) {
                 window.localStorage.setItem('x-auth-token', response.data.auth_token);
                 this.setState({ redirect: '/' })
             }
@@ -68,14 +68,14 @@ class Login extends React.Component {
                                             </div>
                                         </div>
                                         <div>
-                                            <a href="">Forgot password?</a>
+                                            <a href="/">Forgot password?</a>
                                         </div>
                                     </div>
 
-                                    <button className="btn btn-outline-info btn-rounded btn-block my-4 waves-effect z-depth-0" type="submit">Sign in</button>
+                                    <button href="/" className="btn btn-outline-info btn-rounded btn-block my-4 waves-effect z-depth-0" type="submit">Sign in</button>
 
                                     <p>Not a member?
-                                        <a href="">
+                                        <a href="/">
                                             Register
                                         </a>
                                     </p>

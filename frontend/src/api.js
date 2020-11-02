@@ -23,8 +23,8 @@ class DepensesApi {
         return response;
     }
 
-    async getDataHistory(roomId) {
-        const response = await axios.get(`http://localhost:8000/api/v1/room/${roomId}/history/`,
+    async getHistoryData(roomId) {
+        const response = await axios.get(`${this.apiUrl}room/${roomId}/history/`,
             {
                 headers: {
                     Authorization: `Token ${this.getToken()}`
@@ -34,7 +34,7 @@ class DepensesApi {
     }
 
     async getActualUserName(roomId) {
-        const response = await axios.get(`http://localhost:8000/api/v1/room/1/me/`,
+        const response = await axios.get(`${this.apiUrl}room/${roomId}/me/`,
             {
                 headers: {
                     Authorization: `Token ${this.getToken()}`
@@ -52,6 +52,26 @@ class DepensesApi {
             }
         )
         return response;
+    }
+
+    async getResponseMembers(roomId) {
+        const responseMembers = await axios.get(`${this.apiUrl}room/${roomId}/members/`,
+            {
+                headers: {
+                    Authorization: `Token ${this.getToken()}`
+                }
+            })
+        return responseMembers;
+    }
+
+    async getResponseState(roomId) {
+        const responseState = await axios.get(`${this.apiUrl}room/${roomId}/state/`,
+            {
+                headers: {
+                    Authorization: `Token ${this.getToken()}`
+                }
+            })
+        return responseState;
     }
 }
 export default DepensesApi

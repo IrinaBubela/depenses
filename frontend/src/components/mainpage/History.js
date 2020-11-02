@@ -7,7 +7,6 @@ import HistoryItemDebt from './HistoryItemDebt';
 
 class History extends React.Component {
     render() {
-        console.log(this.props.expenseData);
         return (
             <div className="history">
                 {this.props.expenseData.map((el, i) => {
@@ -17,7 +16,7 @@ class History extends React.Component {
                                 switch (el.type) {
                                     case 'settlement':
                                         return (<HistoryItemSettlement name={el.member_name}
-                                            settlement={el.settlement_with_member}
+                                            settlement={el.settlement_with_member_name}
                                             dateDetails={this.props.getDate(el.date)}
                                         />)
                                         break;
@@ -26,20 +25,21 @@ class History extends React.Component {
                                         return (
 
                                             <HistoryItemDebt name={el.member}
-                                                from_member_name={el.from_member_name}
-                                                to_member_name={el.to_member_name}
+                                                fromMemberName={el.from_member_name}
+                                                toMemberName={el.to_member_name}
                                                 amount={el.amount}
                                                 dateDetails={this.props.getDate(el.date)}
+                                                description={el.title}
                                             />
                                         )
                                         break;
 
                                     case 'spending':
-
                                         return (
                                             <HistoryItemExpense name={el.member_name}
                                                 price={el.amount}
                                                 dateDetails={this.props.getDate(el.date)}
+                                                description={el.title}
                                             />
                                         )
                                 }

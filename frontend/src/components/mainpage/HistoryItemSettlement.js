@@ -5,10 +5,20 @@ class HistoryItemSettlement extends React.Component {
     render() {
         return (
             <ListGroup>
-                <ListGroup.Item className="history-item">
-                    <span className="history-item-price">Settlement with member {this.props.settlement}</span>
-                    <p className="history-item-buyer">{this.props.name}</p>
-                    <span className="history-item-date">{this.props.dateDetails}</span></ListGroup.Item>
+                <ListGroup.Item className="history-item history-item-settlement">
+                    <div>
+                        <span>0.00</span>
+                    </div>
+                    <div>
+                        <span className="history-item-price">Settlement with {this.props.settlement}</span>
+                    </div>
+                    <div>
+                        <p className="history-item-buyer">{this.props.name}</p>
+                    </div>
+                    <div>
+                        <span className="history-item-date">{this.props.dateDetails}</span>
+                    </div>
+                </ListGroup.Item>
             </ListGroup>
         )
     }

@@ -1,11 +1,9 @@
 import React from 'react';
-import CardWithExpenses from './components/mainpage/CardWithExpenses';
-import axios from 'axios';
 import History from './components/mainpage/History';
 import NavBarComponent from './components/mainpage/NavBarComponent';
 import AddNewExpanseOrDebt from './components/mainpage/AddNewExpanseOrDebt';
+import Cards from './components/mainpage/Cards';
 import Error from './Error';
-
 import DepensesApi from './api';
 
 
@@ -15,6 +13,8 @@ class MainPage extends React.Component {
         this.state = {
             expenseData: [],
             inputExpanse: '',
+            inputDescriptionExpanse: '',
+            inputDescriptionDebt: '',
             settlement: false,
             selectValue: 'expanses',
             error: false,
@@ -38,6 +38,8 @@ class MainPage extends React.Component {
         this.onSelectDebtUserChange = this.onSelectDebtUserChange.bind(this);
         this.onSelectSettlementUserChange = this.onSelectSettlementUserChange.bind(this);
         this.getMemberNameById = this.getMemberNameById.bind(this);
+        this.onInputDescriptionExpanseChange = this.onInputDescriptionExpanseChange.bind(this);
+        this.onInputDescriptionDebtChange = this.onInputDescriptionDebtChange.bind(this);
         this.api = new DepensesApi();
     }
 
@@ -46,15 +48,23 @@ class MainPage extends React.Component {
         this.setState({ inputExpanse: newExpansesEl });
     }
 
+    onInputDescriptionExpanseChange(e) {
+        let newExpansesEl = e.target.value;
+        this.setState({ inputDescriptionExpanse: newExpansesEl });
+    }
+
+    onInputDescriptionDebtChange(e) {
+        let newExpansesEl = e.target.value;
+        this.setState({ inputDescriptionDebt: newExpansesEl });
+    }
+
     onSelectChange(e) {
         let newSelectValue = e.target.value;
-        console.log(newSelectValue);
         this.setState({ selectValue: newSelectValue });
     }
 
     onSelectDebtUserChange(e) {
         let newSelectValue = e.target.value;
-        console.log(e.target.value);
         this.setState({
             selectedDebtMemberId: newSelectValue.id,
             selectedDebtMemberName: newSelectValue.name
@@ -67,10 +77,7 @@ class MainPage extends React.Component {
 
     onSelectSettlementUserChange(e) {
         const selectedMemberId = parseInt(e.target.value);
-        console.log(selectedMemberId);
-        console.log(this.state.roomMembers);
         const selectedMember = this.getMemberNameById(selectedMemberId);
-        console.log(selectedMember);
 
         this.setState({
             selectedSettlementMember: selectedMember,
@@ -84,16 +91,22 @@ class MainPage extends React.Component {
     async onMakeSettlement(e) {
         e.preventDefault();
 
-        console.log(this.state.selectedSettlementMember);
-
         const response = await this.api.makeApiPostRequest("settlements", {
             member: this.state.actualUser.id,
+            member_name: this.state.selectedSettlementMember.name,
             settlement_with_member: this.state.selectedSettlementMember.id,
+            settlement_with_member_name: this.state.selectedSettlementMember.name,
             room: 1
         }).then(data => console.log(data));
 
         this.setState({
-            expenseData: [{ member: this.state.actualUser.name, settlement_with_member: this.state.selectedSettlementMember.name, settlement: true, date: new Date, type: 'settlement' }, ...this.state.expenseData]
+            expenseData: [{
+                member: this.state.actualUser.id,
+                member_name: this.state.actualUser.name,
+                settlement_with_member: this.state.selectedSettlementMember.name,
+                settlement_with_member_name: this.state.selectedSettlementMember.name,
+                settlement: true, date: new Date, type: 'settlement'
+            }, ...this.state.expenseData]
         })
 
         this.updateResponseState()
@@ -102,17 +115,23 @@ class MainPage extends React.Component {
     async onMakeDebt(e) {
         e.preventDefault();
         const response = await this.api.makeApiPostRequest("depts", {
-            title: 'test-title',
+            title: this.state.inputDescriptionDebt,
+            member: parseInt(this.state.actualUser.id),
             amount: this.state.inputExpanse,
-            room: 1,
             from_member: parseInt(this.state.actualUser.id),
-            to_member: this.state.selectedDebtMember.id
+            to_member: this.state.selectedDebtMember.id,
+            room: 1
         })
 
         this.setState({
             expenseData: [{
-                member: this.state.actualUser.name, amount: this.state.inputExpanse, date: new Date, type: 'dept',
-                from_member_name: this.state.actualUser.name, to_member_name: this.state.selectedDebtMember.name
+                member: this.state.actualUser.id,
+                amount: this.state.inputExpanse,
+                from_member_name: this.state.actualUser.name,
+                to_member_name: this.state.selectedDebtMember.name,
+                title: this.state.inputDescriptionDebt,
+                date: new Date,
+                type: 'dept'
             },
             ...this.state.expenseData
             ]
@@ -123,13 +142,19 @@ class MainPage extends React.Component {
     async onMakeExpense(e) {
         const response = await this.api.makeApiPostRequest("spendings", {
             amount: this.state.inputExpanse,
-            title: 'test-title',
+            title: this.state.inputDescriptionExpanse,
+            member: this.state.actualUser.id,
             room: 1,
-            member: this.state.actualUser.id
         }).then(data => console.log(data));
 
         this.setState({
-            expenseData: [{ member: this.state.actualUser.name, amount: this.state.inputExpanse, date: new Date, type: 'spending' }, ...this.state.expenseData]
+            expenseData: [{
+                amount: this.state.inputExpanse,
+                title: this.state.inputDescriptionExpanse,
+                member_name: this.state.actualUser.name,
+                date: new Date,
+                type: 'spending'
+            }, ...this.state.expenseData]
         })
         this.updateResponseState()
     }
@@ -137,9 +162,9 @@ class MainPage extends React.Component {
     async componentDidMount() {
         this.updateResponseState();
         try {
-            const getDataHistoryResponse = await this.api.getDataHistory(1);
+            const getHistoryDataResponse = await this.api.getHistoryData(1);
             this.setState({
-                expenseData: [...this.state.expenseData, ...getDataHistoryResponse.data]
+                expenseData: [...this.state.expenseData, ...getHistoryDataResponse.data]
             })
             const getActualUserNameResponse = await this.api.getActualUserName(1);
             this.setState({
@@ -172,21 +197,8 @@ class MainPage extends React.Component {
     }
 
     async updateResponseState() {
-        const responseMembers = await axios.get('http://127.0.0.1:8000/api/v1/room/1/members/',
-            {
-                headers: {
-                    Authorization: `Token ${this.getToken()}`
-                }
-            }
-        )
-
-        const responseState = await axios.get('http://127.0.0.1:8000/api/v1/room/1/state/',
-            {
-                headers: {
-                    Authorization: `Token ${this.getToken()}`
-                }
-            }
-        )
+        const responseMembers = await this.api.getResponseMembers(1);
+        const responseState = await this.api.getResponseState(1);
         this.setState({ roomMembers: responseMembers.data, roomState: responseState.data });
     }
 
@@ -209,17 +221,7 @@ class MainPage extends React.Component {
                         <div className="content-row container">
                             <div className="row">
                                 <h1 className="text-center">Budget in October 2020</h1>
-                                <div className="card-expenses">
-                                    {
-                                        this.state.roomMembers.map((member, i) => {
-                                            return <CardWithExpenses
-                                                key={i}
-                                                member={member}
-                                                debt={this.state.roomState[member.name]}
-                                            />
-                                        })
-                                    }
-                                </div>
+                                <Cards roomMembers={this.state.roomMembers} roomState={this.state.roomState} />
                             </div>
                         </div>
                     </div>
@@ -231,6 +233,8 @@ class MainPage extends React.Component {
                                 onMakeDebt={this.onMakeDebt}
                                 onMakeSettlement={this.onMakeSettlement}
                                 onInputExpanseChange={this.onInputExpanseChange}
+                                onInputDescriptionExpanseChange={this.onInputDescriptionExpanseChange}
+                                onInputDescriptionDebtChange={this.onInputDescriptionDebtChange}
                                 roomMembersWithoutMe={this.state.roomMembersWithoutMe}
                                 actualUserName={this.state.actualUser.name}
                                 onSelectDebtUserChange={this.onSelectDebtUserChange}
@@ -243,7 +247,7 @@ class MainPage extends React.Component {
                     <div className="row-mainpage">
                         <div className="content-row container">
                             <h1 className="text-center">Your History Expanses</h1>
-                            <History className="text-center" expenseData={this.state.expenseData} getDate={this.getDate} />
+                            <History className="text-center" expenseData={this.state.expenseData} getDate={this.getDate} description={this.state.inputDescriptionExpanse} />
                         </div>
                     </div>
                 </div >

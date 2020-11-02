@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Button, Form } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 import DebtsDataOnCard from './DebtsDataOnCard'
 
 class CardWithExpenses extends React.Component {

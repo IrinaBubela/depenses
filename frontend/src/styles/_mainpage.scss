@@ -42,10 +42,13 @@
       font-weight: 200;
     }
     .add-new-expense {
-      display: flex;
       min-width: 700px;
       form{
         display: flex;
+        margin-top: 1em;
+        input, button, select{
+          flex-grow: 1 !important; 
+        }
       }
     }
     .card-item{
@@ -93,16 +96,33 @@
       min-width: 700px;
       max-height: 70vh;
       .history-item{
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
+        display: grid;
+        // grid-template-rows: 30px auto auto 50px;  
+        grid-template-columns: 100px 300px 200px 100px;
         border-right: 0;
         border-left: 0;
         padding: 1em 1em 1em 0;
+        div{
+          &:last-child{
+          text-align: right;
+          }
+          &:first-child{
+            flex-basis: 70px;
+          }
+        }
         p{
           margin: 0;
         }
+      }
+      .history-item-expanse{
+        background-color: rgba(221, 95, 86, 0.308);
+      }
+      .history-item-debt{
+        background-color: #eed97d49;
+      }
+      .history-item-settlement{
+        background-color: rgba(39, 182, 63, 0.123);
+        align-items: center;
       }
       &::-webkit-scrollbar {
         width: .5em;

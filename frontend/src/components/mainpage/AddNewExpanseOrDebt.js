@@ -34,18 +34,22 @@ class AddNewExpanseOrDebt extends React.Component {
                             <AddNewDebt
                                 onMakeDebt={this.props.onMakeDebt}
                                 onInputExpanseChange={this.props.onInputExpanseChange}
+                                onInputDescriptionDebtChange={this.props.onInputDescriptionDebtChange}
                                 roomMembersWithoutMe={this.props.roomMembersWithoutMe}
                                 actualUserName={this.props.actualUserName}
                                 onSelectDebtUserChange={this.props.onSelectDebtUserChange} />)
                         case 'expanses': return (
                             <AddNewExpense
                                 onMakeExpense={this.props.onMakeExpense}
+                                onInputDescriptionExpanseChange={this.props.onInputDescriptionExpanseChange}
                                 onInputExpanseChange={this.props.onInputExpanseChange} />)
                         case 'settlement': return (
                             <AddNewSettlement
                                 onMakeSettlement={this.props.onMakeSettlement}
                                 onSelectSettlementUserChange={this.props.onSelectSettlementUserChange}
                                 roomMembersWithoutMe={this.props.roomMembersWithoutMe} />)
+                        default:
+                            return '';
                     }
                 })()}
             </div>
